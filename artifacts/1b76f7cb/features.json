@@ -1,0 +1,25 @@
+{
+  "numeric": [
+    "time_in_hospital",
+    "num_lab_procedures",
+    "num_procedures",
+    "num_medications",
+    "number_outpatient",
+    "number_emergency",
+    "number_inpatient",
+    "number_diagnoses",
+    "total_visits"
+  ],
+  "categorical": [
+    "age",
+    "gender",
+    "race",
+    "A1Cresult",
+    "max_glu_serum",
+    "insulin",
+    "metformin",
+    "change",
+    "diabetesMed",
+    "diag_1_group"
+  ]
+}
