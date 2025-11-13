@@ -89,6 +89,20 @@ def cmd_report(args):
 
     print("[report] generating visualizations...")
 
+
+    # UMAP – nieliniowy, zwykle ładnie oddaje strukturę lokalną
+    umap_ok = True
+    try:
+        cluster_scatter(
+            X,
+            labels,
+            out_path=str(A / f"umap_kmeans_k{args.k}.png"),
+            method='umap'
+        )
+    except ImportError:
+        umap_ok = False
+        print("[report] skipped UMAP plot (umap-learn not installed)")
+
     # PCA – szybka, interpretowalna
     cluster_scatter(
         X,
@@ -106,18 +120,6 @@ def cmd_report(args):
         method='tsne'
     )
 
-    # UMAP – nieliniowy, zwykle ładnie oddaje strukturę lokalną
-    umap_ok = True
-    try:
-        cluster_scatter(
-            X,
-            labels,
-            out_path=str(A / f"umap_kmeans_k{args.k}.png"),
-            method='umap'
-        )
-    except ImportError:
-        umap_ok = False
-        print("[report] skipped UMAP plot (umap-learn not installed)")
 
     # Porównanie PCA vs t-SNE
     cluster_scatter(
