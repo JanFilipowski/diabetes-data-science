@@ -42,6 +42,9 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df = df.drop(columns=[col])
 
+    # Drop demographic
+    df = df.drop(columns=["gender", "race"], errors="ignore")
+
     # Fill some categorical NaNs
     if 'race' in df.columns:
         df['race'] = df['race'].fillna('Unknown')

@@ -12,8 +12,6 @@
   ],
   "categorical": [
     "age",
-    "gender",
-    "race",
     "A1Cresult",
     "max_glu_serum",
     "insulin",
