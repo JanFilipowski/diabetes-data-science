@@ -90,19 +90,86 @@ def cmd_report(args):
     print("[report] generating visualizations...")
 
     # PCA – szybka, interpretowalna
-    cluster_scatter(X, labels, out_path=str(A / f"pca_kmeans_k{args.k}.png"), method='pca')
+    cluster_scatter(
+        X,
+        labels,
+        out_path=str(A / f"pca_kmeans_k{args.k}.png"),
+        method='pca'
+        # title można zostawić domyślne z cluster_scatter
+    )
 
     # t-SNE – efektowna, nieliniowa
-    cluster_scatter(X, labels, out_path=str(A / f"tsne_kmeans_k{args.k}.png"), method='tsne')
+    cluster_scatter(
+        X,
+        labels,
+        out_path=str(A / f"tsne_kmeans_k{args.k}.png"),
+        method='tsne'
+    )
+
+    # UMAP – nieliniowy, zwykle ładnie oddaje strukturę lokalną
+    umap_ok = True
+    try:
+        cluster_scatter(
+            X,
+            labels,
+            out_path=str(A / f"umap_kmeans_k{args.k}.png"),
+            method='umap'
+        )
+    except ImportError:
+        umap_ok = False
+        print("[report] skipped UMAP plot (umap-learn not installed)")
+
+    # Porównanie PCA vs t-SNE
+    cluster_scatter(
+        X,
+        labels,
+        out_path=str(A / f"pca_tsne_kmeans_k{args.k}.png"),
+        method='pca_tsne'
+    )
+
+    # Porównanie PCA vs UMAP
+    pca_umap_ok = True
+    if umap_ok:  # tylko jeśli mamy umap
+        try:
+            cluster_scatter(
+                X,
+                labels,
+                out_path=str(A / f"pca_umap_kmeans_k{args.k}.png"),
+                method='pca_umap'
+            )
+        except ImportError:
+            pca_umap_ok = False
+            print("[report] skipped PCA vs UMAP plot (umap-learn not installed)")
+    else:
+        pca_umap_ok = False
 
     # Profile i podsumowania
-    numeric_keep = list(cfg.numeric_features) + (["readmit_30"] if "readmit_30" in df_eng.columns else [])
+    numeric_keep = list(cfg.numeric_features) + (
+        ["readmit_30"] if "readmit_30" in df_eng.columns else []
+    )
+
     means, readm = profile_by_cluster(df_eng, labels, numeric_keep=numeric_keep)
     save_profiles(means, readm, out_dir=str(A))
 
     summary = cluster_summary(labels, readmitted=df_eng.get("readmitted"))
     summary.to_csv(A / f"cluster_summary_k{args.k}.csv", index=False)
-    print(f"[report] saved: {A}/pca_kmeans_k{args.k}.png, tsne_kmeans_k{args.k}.png, and cluster_feature_means.csv, readmission_by_cluster.csv, cluster_summary_k{args.k}.csv")
+
+    msg = (
+        f"[report] saved: "
+        f"{A}/pca_kmeans_k{args.k}.png, "
+        f"{A}/tsne_kmeans_k{args.k}.png, "
+    )
+    if umap_ok:
+        msg += f"{A}/umap_kmeans_k{args.k}.png, "
+    msg += f"{A}/pca_tsne_kmeans_k{args.k}.png"
+    if pca_umap_ok:
+        msg += f", {A}/pca_umap_kmeans_k{args.k}.png"
+    msg += (
+        ", and cluster_feature_means.csv, "
+        "readmission_by_cluster.csv, "
+        f"cluster_summary_k{args.k}.csv"
+    )
+    print(msg)
 
 def main():
     p = argparse.ArgumentParser(description="Diabetes clustering CLI with caching")
