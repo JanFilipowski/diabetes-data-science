@@ -1,17 +1,56 @@
 import os
+from typing import Optional, Dict
+
 import numpy as np
 import pandas as pd
-from typing import Optional, Dict
 from sklearn.metrics import silhouette_score, davies_bouldin_score
 
-def clustering_scores(X: np.ndarray, labels: np.ndarray) -> Dict[str, Optional[float]]:
-    unique = np.unique(labels[labels >= 0])
+
+def clustering_scores(X: np.ndarray, labels: np.ndarray, method: str = 'kmeans') -> Dict[str, Optional[float]]:
+    labels = np.asarray(labels)
+    X = np.asarray(X)
+    if method == 'dbscan':
+        mask = labels >= 0
+        if mask.sum() < 2:
+            return {'silhouette': None, 'davies_bouldin': None}
+        eval_X, eval_labels = X[mask], labels[mask]
+    else:
+        eval_X, eval_labels = X, labels
+    unique = np.unique(eval_labels)
     if unique.size <= 1:
         return {'silhouette': None, 'davies_bouldin': None}
     return {
-        'silhouette': float(silhouette_score(X, labels)),
-        'davies_bouldin': float(davies_bouldin_score(X, labels))
+        'silhouette': float(silhouette_score(eval_X, eval_labels)),
+        'davies_bouldin': float(davies_bouldin_score(eval_X, eval_labels))
     }
+
+
+def gmm_information_criteria(X: np.ndarray, gmm_model) -> Dict[str, float]:
+    return {'bic': float(gmm_model.bic(X)), 'aic': float(gmm_model.aic(X))}
+
+
+def dbscan_cluster_stats(labels: np.ndarray) -> Dict[str, float]:
+    labels = np.asarray(labels)
+    noise = labels == -1
+    clusters = labels[~noise]
+    n_clusters = int(len(np.unique(clusters))) if clusters.size else 0
+    n_noise = int(noise.sum())
+    noise_pct = float(n_noise / len(labels) * 100) if len(labels) else 0.0
+    return {'n_clusters': n_clusters, 'n_noise': n_noise, 'noise_pct': noise_pct}
+
+
+def method_specific_scores(
+    X: np.ndarray,
+    labels: np.ndarray,
+    model=None,
+    method: str = 'kmeans'
+) -> Dict[str, Optional[float]]:
+    results = clustering_scores(X, labels, method=method)
+    if method == 'gmm' and model is not None:
+        results.update(gmm_information_criteria(X, model))
+    if method == 'dbscan':
+        results.update(dbscan_cluster_stats(labels))
+    return results
 
 # evaluate.py
 def profile_by_cluster(df_eng, labels, numeric_keep):

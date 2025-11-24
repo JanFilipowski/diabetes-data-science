@@ -7,7 +7,13 @@ class Config:
     cache_processed: bool = True
 
     # Clustering
+    default_method: str = 'kmeans'
     n_clusters: int = 4  # k for KMeans
+    hierarchical_n_clusters: int = 4
+    hierarchical_linkage: str = 'ward'
+    gmm_n_components: int = 4
+    gmm_covariance_type: str = 'full'
+    gmm_max_iter: int = 100
     dbscan_eps: float = 0.7
     dbscan_min_samples: int = 50
     num_block_weight = 1.5

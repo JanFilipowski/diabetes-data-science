@@ -1,13 +1,14 @@
 import argparse
 import json
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 from scipy.stats import chi2_contingency
 
 from src.config import Config
-from src.io_utils import run_id_from_cfg, artdir, load_parquet, load_npz
+from src.io_utils import artdir, load_npz, load_parquet, run_id_from_cfg
 
 def safe_json_dump(obj, path):
     """Zapisz do JSON konwertując obiekty numpy i bool na typy Pythona."""
@@ -65,19 +66,33 @@ def analyze_gender_bias(df_eng: pd.DataFrame, labels, out_dir: Path):
     return result
 
 
+def _label_path(art_dir: Path, method: str, k: int) -> Path:
+    candidates = []
+    if method == "dbscan":
+        candidates.append(art_dir / "labels_dbscan.npz")
+    else:
+        candidates.append(art_dir / f"labels_{method}_k{k}.npz")
+        candidates.append(art_dir / f"labels_k{k}.npz")
+    for cand in candidates:
+        if cand.exists():
+            return cand
+    raise FileNotFoundError(f"No labels file found (searched: {candidates})")
+
+
 def main():
     p = argparse.ArgumentParser(description="Analyze demographic bias (e.g. gender × cluster)")
     p.add_argument("--tag", default=None, help="Run tag used in artifacts folder")
-    p.add_argument("--k", type=int, required=True, help="Number of clusters used")
+    p.add_argument("--k", type=int, required=True, help="Number of clusters/components used")
+    p.add_argument("--method", choices=["kmeans", "hierarchical", "gmm", "dbscan"], default="kmeans")
     args = p.parse_args()
 
     cfg = Config()
     run_id = run_id_from_cfg(cfg, tag=args.tag)
     A = artdir(run_id)
 
-    print(f"[bias] Loading cached data for {run_id} (k={args.k})...")
+    print(f"[bias] Loading cached data for {run_id} ({args.method}, k={args.k})...")
     df_eng = load_parquet(A / "df_eng.parquet")
-    labels = load_npz(A / f"labels_k{args.k}.npz")["labels"]
+    labels = load_npz(_label_path(A, args.method, args.k))["labels"]
 
     analyze_gender_bias(df_eng, labels, A)
 

@@ -2,5 +2,7 @@ pandas>=1.5
 numpy>=1.23
 scikit-learn>=1.2
 matplotlib>=3.7
+seaborn>=0.12
+scipy>=1.9
 ucimlrepo>=0.0.6
 umap-learn>=0.5.9
