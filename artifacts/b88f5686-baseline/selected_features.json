@@ -1,0 +1,29 @@
+{
+  "selected": [
+    "num__time_in_hospital",
+    "num__num_procedures",
+    "num__num_medications",
+    "num__number_outpatient",
+    "num__number_emergency",
+    "num__number_inpatient",
+    "num__number_diagnoses",
+    "num__total_visits",
+    "cat__age_[50-60)",
+    "cat__age_[70-80)",
+    "cat__A1Cresult_nan",
+    "cat__max_glu_serum_nan",
+    "cat__insulin_Down",
+    "cat__insulin_No",
+    "cat__insulin_Steady",
+    "cat__metformin_No",
+    "cat__metformin_Steady",
+    "cat__metformin_Up",
+    "cat__change_Ch",
+    "cat__change_No",
+    "cat__diabetesMed_No",
+    "cat__diabetesMed_Yes",
+    "cat__diag_1_group_Circulatory",
+    "cat__diag_1_group_Other",
+    "cat__diag_1_group_Unknown"
+  ]
+}

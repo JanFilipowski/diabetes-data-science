@@ -31,6 +31,10 @@ def safe_json_dump(obj: Any, path: PathLike) -> None:
     def convert(value: Any):
         if hasattr(value, "item"):
             return value.item()
+        if isinstance(value, pd.DataFrame):
+            return value.to_dict(orient="records")
+        if isinstance(value, pd.Series):
+            return value.to_dict()
         if isinstance(value, (set, frozenset)):
             return sorted(value)
         if isinstance(value, np.ndarray):

@@ -1,9 +1,0 @@
-{
-  "method": "KMeans",
-  "k": 6,
-  "scores": {
-    "silhouette": 0.18384880023724498,
-    "davies_bouldin": 1.855899125754754
-  },
-  "n_features": 25
-}
