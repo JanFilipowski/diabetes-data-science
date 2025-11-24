@@ -34,15 +34,19 @@ python cli.py report --method kmeans --k 5 --tag baseline --include-demographics
 
 Each command honors `--tag` (default pulled from `src/config.py`). Run IDs are hashed from configuration to keep artifacts organized.
 
-### Extended CLI Commands
-| Command | Purpose | Key Flags |
+### CLI Reference
+| Command | Primary Role | Notable Flags |
 | --- | --- | --- |
-| `python cli.py analyze-demographics` | Full fairness report (chi-square, Cramér's V, stacked/grouped/heatmap plots, cross-tabs) sourced from preserved `df_raw`. | `--method`, `--k`, `--demographic-cols` (`gender,race,age` default), `--out-dir`. |
-| `python cli.py feature-importance` | Permutation importance, ANOVA/Kruskal scores, silhouette-per-feature, centroid tables, and heatmaps for a fitted model. | `--method`, `--k`, `--top-k`, `--test` (`anova`/`kruskal`), `--n-repeats`. |
-| `python cli.py advanced-viz` | Seaborn diagnostics (pairplot, violin/box, correlation grids, FacetGrid, cluster size bars). | `--pairplot-features`, `--violin-features`, `--corr-features`, `--violin-kind`, `--corr-method`, `--facet-cat`, `--facet-num`. |
+| `python cli.py prepare` | Load data, save `df_raw`/`df_eng`, fit preprocessor, emit `X.npz`, feature metadata. | `--tag` (namespaces artifacts). |
+| `python cli.py tune` | Grid-sweep clustering hyperparameters using cached `X`. Saves sweep CSV/plots per method. | `--method`, `--k-min/--k-max`, `--linkage`, `--covariance-type`, `--eps-values`, `--min-samples-values`. |
+| `python cli.py fit` | Train the selected clustering model, persist labels, model, score report, and method-specific extras (e.g., dendrograms, GMM probs). | `--method`, `--k`, `--linkage`, `--covariance-type`, `--eps`, `--min-samples`. |
+| `python cli.py report` | Produce PCA/t-SNE/UMAP plots, cluster summaries, readmission tables, and optional demographic bundle. | `--method`, `--k`, `--include-demographics`. |
+| `python cli.py analyze-demographics` | Full fairness suite: chi-square/Cramér’s V, stacked/grouped/heatmap plots, cross-tabs, stats written under `demographics*/`. | `--method`, `--k`, `--demographic-cols`, `--out-dir`. |
+| `python cli.py feature-importance` | Permutation importance, ANOVA/Kruskal tests, silhouette-per-feature, centroid tables + visualizations. | `--method`, `--k`, `--top-k`, `--test`, `--n-repeats`. |
+| `python cli.py advanced-viz` | Seaborn-driven diagnostics (pairplots, violin/box, correlation grids, FacetGrid, cluster-size bars) saved under `advanced_viz*/`. | `--method`, `--k`, `--pairplot-features`, `--violin-features`, `--violin-kind`, `--corr-features`, `--corr-method`, `--facet-cat`, `--facet-num`, `--facet-col-wrap`. |
+| `python cli_viz.py` | Convenience script for the legacy heatmap/readmission/demographic trio plus optional seaborn plots. | `--method`, `--k`, `--tag`, `--features`, `--violin-kind`, `--corr-method`, `--facet-cat`, `--facet-num`, `--skip-basic`, `--skip-advanced`. |
 
-### Legacy helper
-`python cli_viz.py --method kmeans --k 5 --tag baseline [--features age,avg_glucose_level]` quickly regenerates the original heatmap/readmission/demographics trio and now piggybacks the same seaborn utilities as the advanced CLI. Use `--skip-basic` or `--skip-advanced` to control output volume.
+All commands obey `--tag`, so you can maintain multiple experiment tracks concurrently. Methods default to the value in `src/config.py`, but overriding `--method` lets every tool operate on KMeans, hierarchical, GMM, or DBSCAN artifacts explicitly.
 
 ## Artifact Layout
 After `cli.py prepare` the folder `artifacts/<run_id>` contains:
